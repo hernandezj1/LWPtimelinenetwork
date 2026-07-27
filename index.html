@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Random Network of Pedagogues</title>
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+
+<link rel="stylesheet" href="format1.css">
+
+</head>
+
+<body>
+
+<div id="header">
+  <h1>Random Network of Pedagogues</h1>
+  <p>Hover nodes • Drag • Use + / − to zoom • Click to load biography</p>
+</div>
+
+
+<div id="layout">
+
+  <!-- GRAPH -->
+  <div id="graphContainer">
+
+    <svg></svg>
+
+    <!-- ZOOM BUTTONS -->
+    <div id="zoomControls">
+      <button class="zoomBtn" id="zoomIn">+</button>
+      <button class="zoomBtn" id="zoomOut">−</button>
+    </div>
+
+  </div>
+
+
+  <!-- BIO -->
+  <div id="bioPanel">
+
+    <div id="bioHeader">
+      Pedagogue Biography
+    </div>
+
+    <iframe id="bioFrame"></iframe>
+
+  </div>
+
+
+</div>
+
+
+
+<!-- TIMELINE -->
+<div id="timeline">
+
+  <div id="yearDisplay">
+    Years:
+    <span id="minYear">1800</span>
+    -
+    <span id="maxYear">2025</span>
+  </div>
+
+
+  <div class="sliderContainer">
+
+    <input 
+      type="range"
+      id="yearStart"
+      min="1800"
+      max="2025"
+      value="1800">
+
+
+    <input 
+      type="range"
+      id="yearEnd"
+      min="1800"
+      max="2025"
+      value="2025">
+
+  </div>
+
+</div>
+
+
+
+<script src="networkgraph.js"></script>
+
+</body>
+</html>

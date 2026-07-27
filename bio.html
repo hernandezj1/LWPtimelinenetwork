@@ -1,0 +1,141 @@
+<title>Timeline Selector</title>
+  <style>
+    /* Ensure the search bar and dropdown are stacked vertically */
+    #container {
+      display: flex;
+      flex-direction: column;
+      width: 300px; /* Adjust the width as needed */
+      position: relative; /* Ensure relative positioning of container */
+      background-color: white;
+      border: 1px solid black; 
+    }
+
+    /* Hide dropdown by default */
+    select#timelineSelector {
+      display: none;
+      height: 150px;
+      overflow: auto;
+      position: absolute;
+      top: 100%; /* Position dropdown below the search bar */
+      left: 0;
+      width: 100%;
+      z-index: 1000; /* Ensure it overlays the next element */
+      background-color: white; /* Ensure dropdown background */
+      border: 1px solid black; /* Add a border to the dropdown */
+      box-sizing: border-box;
+    }
+
+  </style>
+
+
+
+<div id="container">
+  <input type="text" id="searchBar" onkeyup="filterOptions()" placeholder="Search by pedagogue..." onfocus="showDropdown()">
+  <select id="timelineSelector" onchange="changeTimeline()" size="10">
+  </select>
+</div>
+
+<iframe id="timelineIframe" width="100%" height="650" webkitallowfullscreen="" mozallowfullscreen="" allowfullscreen="" frameborder="0"></iframe>
+
+<script>
+
+//Get URL parameter
+function getQueryParam(param) {
+  const params = new URLSearchParams(window.location.search);
+  return params.get(param);
+}
+
+// Fetch CSV file and populate dropdown
+fetch('https://raw.githubusercontent.com/hernandezj1/LWP/refs/heads/main/links.csv')
+  .then(response => response.text())
+  .then(csv => {
+    const rows = csv.split('\n');
+    const selector = document.getElementById("timelineSelector");
+    rows.forEach(row => {
+      const [name, url] = row.split(',');
+      if (name && url) { // Check if both name and url are present
+        const option = document.createElement("option");
+        option.text = name.trim();
+        option.value = extractSpreadsheetId(url.trim());
+        selector.add(option);
+      }
+    });
+const searchValue = getQueryParam("search");
+
+if (searchValue) {
+
+  // Fill search bar
+  document.getElementById("searchBar").value = searchValue;
+
+  // Filter dropdown
+  filterOptions();
+
+  // Show dropdown
+  showDropdown();
+
+  // Select matching timeline
+  selectOptionByName(searchValue);
+
+} else {
+
+  // Existing default behavior
+  if (selector.options.length > 0) {
+    selectOptionByName('name');
+  }
+
+}
+  })
+  .catch(error => console.error('Error fetching the CSV file:', error));
+
+// Function to extract spreadsheet ID from URL
+function extractSpreadsheetId(url) {
+  const regex = /spreadsheets\/d\/([a-zA-Z0-9-_]+)/;
+  const match = url.match(regex);
+  return match ? match[1] : '';
+}
+
+function changeTimeline() {
+  var selector = document.getElementById("timelineSelector");
+  var selectedSourceCode = selector.options[selector.selectedIndex].value;
+  var iframe = document.getElementById("timelineIframe");
+  var newSrc = `https://cdn.knightlab.com/libs/timeline3/latest/embed/index.html?source=${selectedSourceCode}&font=Default&lang=en&initial_zoom=2&height=650`;
+  iframe.src = newSrc;
+
+  selector.style.display = 'none';
+}
+
+function selectOptionByName(name) {
+  var selector = document.getElementById("timelineSelector");
+  for (var i = 0; i < selector.options.length; i++) {
+    if (selector.options[i].text === name) {
+      selector.selectedIndex = i;
+      changeTimeline();
+      break;
+    }
+  }
+}
+
+// Function to filter dropdown options
+function filterOptions() {
+  var input, filter, selector, options, i;
+  input = document.getElementById("searchBar");
+  filter = input.value.toLowerCase();
+  selector = document.getElementById("timelineSelector");
+  options = selector.options;
+  
+  for (i = 0; i < options.length; i++) {
+    var optionText = options[i].text.toLowerCase();
+    if (optionText.indexOf(filter) > -1) {
+      options[i].style.display = "";
+    } else {
+      options[i].style.display = "none";
+    }
+  }
+}
+
+// Show dropdown when search bar is focused
+function showDropdown() {
+  var dropdown = document.getElementById("timelineSelector");
+  dropdown.style.display = "block";
+}
+</script>
