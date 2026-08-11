@@ -41,7 +41,7 @@ document.getElementById("zoomOut").onclick = () => {
    LOAD NETWORK
 ========================= */
 
-d3.json("network.json")
+d3.json("network-inst-pedagogues.json")
 .then(data => {
 
   allData = data;
@@ -139,7 +139,7 @@ function createGraph(nodes, links){
     .join("circle")
     .attr("class","node")
     .attr("r",6)
-    .attr("fill","#3b82f6")
+    .attr("fill",(d) => d.type === "university" ? "#046f10" : "#3b82f6")
     .call(
       d3.drag()
         .on("start",dragstarted)
@@ -178,45 +178,60 @@ function createGraph(nodes, links){
 
   });
 
+  node.on("mouseout", (event, d) => {
+    if (d.type === "university") {
+      d3.select(event.currentTarget)
+        .attr("fill", "#046f10")
+        .attr("r", 6);
+    } else {
+      d3.select(event.currentTarget)
+        .attr("fill", "#3b82f6")
+        .attr("r", 6);
+    }
 
-
-  node.on("mouseout",()=>{
-
-    node
-      .attr("fill","#3b82f6")
-      .attr("r",6);
-
-
-    label.style(
-      "opacity",
-      0
-    );
-
+    label.style("opacity", 0);
   });
 
 
 
 
-  /* CLICK BIO */
-
-  node.on("click",(event,d)=>{
-
-    node.attr(
-      "fill",
-      "#3b82f6"
-    );
 
 
-    d3.select(event.currentTarget)
-      .attr("fill","#ef4444");
+  /* CLICK Node and load bio or Wikipedia page */
+
+node.on("click", (event, d) => {
+
+  // Reset every node to its normal type color
+  node.attr("fill", n =>
+    n.type === "university"
+      ? "#046f10"
+      : "#3b82f6"
+  );
 
 
+  // Highlight clicked node
+  d3.select(event.currentTarget)
+    .attr("fill", "#ef4444");
 
+
+  if (d.type === "university") {
+
+    // University → reusable Wikipedia template
+    //document.getElementById("bioFrame").src =
+      //"wikipedia_embed.html?url=" +
+      //encodeURIComponent(d.url);
+    document.getElementById("bioFrame").src = d.url;
+  } else {
+
+    // Pedagogue → existing biography page
     document.getElementById("bioFrame").src =
       "bio.html?search=" +
       encodeURIComponent(d.id);
 
-  });
+  }
+
+});
+
 
 
 
@@ -346,44 +361,33 @@ function setupTimeline(){
 
 function updateTimeline(){
 
-
   let start =
     +document.getElementById("yearStart").value;
-
 
   let end =
     +document.getElementById("yearEnd").value;
 
-
-
-
   /*
-    Prevent backwards range
+  Prevent backwards range
   */
 
   if(start > end){
 
-    let temp=start;
-    start=end;
-    end=temp;
+    let temp = start;
+    start = end;
+    end = temp;
 
   }
 
-
-
-
   document.getElementById("minYear")
-    .textContent=start;
-
+    .textContent = start;
 
   document.getElementById("maxYear")
-    .textContent=end;
-
-
+    .textContent = end;
 
 
   /*
-    Filter links by year
+  Filter links by year
   */
 
   const filteredLinks =
@@ -403,22 +407,18 @@ function updateTimeline(){
             ? link.target.id
             : link.target,
 
-        year:Number(link.year)
+        year: Number(link.year)
       }));
 
 
-
-
   /*
-    Keep only connected nodes
+  Keep only connected nodes
   */
 
   const connected =
     new Set();
 
-
-
-  filteredLinks.forEach(link=>{
+  filteredLinks.forEach(link => {
 
     connected.add(link.source);
     connected.add(link.target);
@@ -426,23 +426,16 @@ function updateTimeline(){
   });
 
 
-
   const filteredNodes =
     allData.nodes
       .filter(node =>
         connected.has(node.id)
-      )
-      .map(node => ({
-        id:node.id
-      }));
-
-
+      );
 
 
   createGraph(
     filteredNodes,
     filteredLinks
   );
-
 
 }
